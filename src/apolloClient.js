@@ -1,8 +1,8 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
-import { APP_TOKEN_KEY, SERVER_ENDPOINT_URI } from "./constants";
+import { APP_TOKEN_KEY } from "./constants";
 import { setContext } from "@apollo/client/link/context";
 
-const httpLink = createHttpLink({ uri: SERVER_ENDPOINT_URI });
+const httpLink = createHttpLink({ uri: process.env.REACT_APP_SERVER_URL });
 
 const authLink = setContext((_, { headers }) => {
   return {

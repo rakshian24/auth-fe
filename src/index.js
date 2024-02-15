@@ -6,17 +6,20 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter } from "react-router-dom";
 import client from "./apolloClient";
+import { AuthProvider } from "./context/authContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <ApolloProvider client={client}>
-    <React.StrictMode>
+  <AuthProvider>
+    <ApolloProvider client={client}>
       <BrowserRouter>
-        <App />
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
       </BrowserRouter>
-    </React.StrictMode>
-  </ApolloProvider>
+    </ApolloProvider>
+  </AuthProvider>
 );

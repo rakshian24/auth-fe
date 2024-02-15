@@ -1,13 +1,43 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Backdrop,
+  Button,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { InitialLoginFormValues } from "./helpers";
 import { emailRegex, textInputRegex } from "../../utils";
 import CustomInput from "../CustomInput";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ROUTES } from "../../constants";
+import { gql, useMutation } from "@apollo/client";
+import { AuthContext } from "../../context/authContext";
+
+const LOGIN_MUTATION = gql`
+  mutation Mutation($loginInput: LoginInput) {
+    loginUser(loginInput: $loginInput) {
+      token
+      user {
+        id
+        username
+        email
+        todos {
+          id
+          title
+          description
+          isCompleted
+          ownerId
+        }
+      }
+    }
+  }
+`;
 
 const Login = () => {
+  const context = useContext(AuthContext);
+  const navigate = useNavigate();
   const { control, formState, handleSubmit } = useForm({
     defaultValues: { ...InitialLoginFormValues },
     mode: "onChange",
@@ -16,8 +46,18 @@ const Login = () => {
   const { errors } = formState;
   const COMMON_PROPS = { control: control, errors: errors };
 
-  const onSubmitHandler = (formValues) => {
-    console.log("formValuesformValues = ", formValues);
+  const [registerUser, { loading }] = useMutation(LOGIN_MUTATION);
+
+  const onSubmitHandler = async (formValues) => {
+    const { data } = await registerUser({
+      variables: {
+        loginInput: { ...formValues },
+      },
+    });
+    if (data?.loginUser?.token) {
+      context.login(data?.loginUser);
+      navigate(ROUTES.DASHBOARD);
+    }
   };
 
   return (
@@ -25,6 +65,12 @@ const Login = () => {
       <Typography fontSize={24} fontWeight={600}>
         Login
       </Typography>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Stack>
         <form noValidate onSubmit={handleSubmit(onSubmitHandler)}>
           <Stack gap={2}>
